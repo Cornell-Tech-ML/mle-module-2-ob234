@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Any, Dict, Optional, Sequence, Tuple
 
 
@@ -31,25 +30,31 @@ class Module:
 
     def train(self) -> None:
         "Set the mode of this module and all descendent modules to `train`."
-        raise NotImplementedError("Need to include this file from past assignment.")
+        self.training = True
+        for module in self.modules():
+            module.train()
 
     def eval(self) -> None:
         "Set the mode of this module and all descendent modules to `eval`."
-        raise NotImplementedError("Need to include this file from past assignment.")
+        self.training = False
+        for module in self.modules():
+            module.eval()
 
     def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """
         Collect all the parameters of this module and its descendents.
-
-
-        Returns:
-            The name and `Parameter` of each ancestor parameter.
+        Returns: The name and `Parameter` of each ancestor parameter.
         """
-        raise NotImplementedError("Need to include this file from past assignment.")
+        params = [(name, parameter) for name, parameter in self._parameters.items()]
+
+        for name, child in self._modules.items():
+            for child_name, child_param in child.named_parameters():
+                params.append((name + "." + child_name, child_param))
+        return params
 
     def parameters(self) -> Sequence[Parameter]:
         "Enumerate over all the parameters of this module and its descendents."
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return [param for name, param in self.named_parameters()]
 
     def add_parameter(self, k: str, v: Any) -> Parameter:
         """
@@ -106,7 +111,6 @@ class Module:
 
         main_str = self.__class__.__name__ + "("
         if lines:
-            # simple one-liner info, which most builtin Modules will use
             main_str += "\n  " + "\n  ".join(lines) + "\n"
 
         main_str += ")"
@@ -115,9 +119,9 @@ class Module:
 
 class Parameter:
     """
-    A Parameter is a special container stored in a `Module`.
+    A Parameter is a special container stored in a :class:`Module`.
 
-    It is designed to hold a `Variable`, but we allow it to hold
+    It is designed to hold a :class:`Variable`, but we allow it to hold
     any value for testing.
     """
 

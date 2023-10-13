@@ -14,7 +14,6 @@ def RParam(*shape):
 class Network(minitorch.Module):
     def __init__(self, hidden_layers):
         super().__init__()
-
         # Submodules
         self.layer1 = Linear(2, hidden_layers)
         self.layer2 = Linear(hidden_layers, hidden_layers)
@@ -22,6 +21,9 @@ class Network(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 2.5.
+        middle = [h.relu() for h in self.layer1.forward(x)]
+        end = [h.relu() for h in self.layer2.forward(middle)]
+        return self.layer3.forward(end)[0].sigmoid()
         raise NotImplementedError("Need to implement for Task 2.5")
 
 
@@ -34,6 +36,11 @@ class Linear(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 2.5.
+        y = [self.bias.value[i] for i in range(self.out_size)]
+        for i, x in enumerate(x):
+            for j in range(len(y)):
+                y[j] = y[j] + x * self.weights.value[i][j]
+        return y
         raise NotImplementedError("Need to implement for Task 2.5")
 
 

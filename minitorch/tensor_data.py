@@ -18,7 +18,6 @@ class IndexingError(RuntimeError):
     "Exception raised for indexing errors."
     pass
 
-
 Storage: TypeAlias = npt.NDArray[np.float64]
 OutIndex: TypeAlias = npt.NDArray[np.int32]
 Index: TypeAlias = npt.NDArray[np.int32]
@@ -31,21 +30,8 @@ UserStrides: TypeAlias = Sequence[int]
 
 
 def index_to_position(index: Index, strides: Strides) -> int:
-    """
-    Converts a multidimensional tensor `index` into a single-dimensional position in
-    storage based on strides.
-
-    Args:
-        index : index tuple of ints
-        strides : tensor strides
-
-    Returns:
-        Position in storage
-    """
-
-    # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
-
+    #Task 2.1
+    return sum(x * y for x, y in zip(strides, index))
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
     """
@@ -61,7 +47,9 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
 
     """
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
+    for dim in range(len(shape), 0, -1):
+        out_index[dim - 1] = ordinal % shape[dim - 1]
+        ordinal = ordinal // shape[dim - 1]
 
 
 def broadcast_index(
@@ -84,7 +72,12 @@ def broadcast_index(
         None
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    for i in range(len(shape)):
+        if shape[i] != 1:
+            out_index[i] = big_index[i + len(big_shape) - len(shape)]
+        else:
+            out_index[i] = 0
+    
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -102,8 +95,17 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    broadcasted_shape = []
+    if len(shape1) > len(shape2):
+        shape2 = [1 for i in range(len(shape1) - len(shape2))] + list(shape2)
+    else:
+        shape1 = [1 for i in range(len(shape2) - len(shape1))] + list(shape1)
+    for i in range(max(len(shape1), len(shape2))):
+        if (shape1[i] != 1) and (shape2[i] != 1) and (shape1[i] != shape2[i]):
+            raise IndexingError('Unable to Broadcast')
+        broadcasted_shape.append(max(shape1[i], shape2[i]))
 
+    return tuple(broadcasted_shape)
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
     layout = [1]
@@ -208,6 +210,7 @@ class TensorData:
     def tuple(self) -> Tuple[Storage, Shape, Strides]:
         return (self._storage, self._shape, self._strides)
 
+
     def permute(self, *order: int) -> TensorData:
         """
         Permute the dimensions of the tensor.
@@ -222,8 +225,7 @@ class TensorData:
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
 
-        # TODO: Implement for Task 2.1.
-        raise NotImplementedError("Need to implement for Task 2.1")
+        return TensorData(self._storage, tuple([self.shape[i] for i in order]), tuple([self.strides[i] for i in order]))
 
     def to_string(self) -> str:
         s = ""

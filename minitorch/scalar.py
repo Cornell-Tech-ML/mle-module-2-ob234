@@ -41,9 +41,6 @@ class ScalarHistory:
     inputs: Sequence[Scalar] = ()
 
 
-# ## Task 1.2 and 1.4
-# Scalar Forward and Backward
-
 _var_count = 0
 
 
@@ -83,54 +80,72 @@ class Scalar:
         return "Scalar(%f)" % self.data
 
     def __mul__(self, b: ScalarLike) -> Scalar:
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
         return Mul.apply(self, b)
 
     def __truediv__(self, b: ScalarLike) -> Scalar:
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
         return Mul.apply(self, Inv.apply(b))
 
     def __rtruediv__(self, b: ScalarLike) -> Scalar:
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
         return Mul.apply(b, Inv.apply(self))
 
     def __add__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return Add.apply(self, b)
 
     def __bool__(self) -> bool:
         return bool(self.data)
 
     def __lt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return LT.apply(self, b)
 
     def __gt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return LT.apply(b, self)
 
     def __eq__(self, b: ScalarLike) -> Scalar:  # type: ignore[override]
-        raise NotImplementedError("Need to include this file from past assignment.")
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return EQ.apply(self, b)
 
     def __sub__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return Add.apply(self, Neg.apply(b))
 
     def __neg__(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Neg.apply(self)
 
     def __radd__(self, b: ScalarLike) -> Scalar:
-        return self + b
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return Add.apply(self, b)
 
     def __rmul__(self, b: ScalarLike) -> Scalar:
-        return self * b
+        if not isinstance(b, Scalar):
+            b = Scalar(b)
+        return Mul.apply(self, b)
 
     def log(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Log.apply(self)
 
     def exp(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Exp.apply(self)
 
     def sigmoid(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return Sigmoid.apply(self)
 
     def relu(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
-
-    # Variable elements for backprop
+        return ReLU.apply(self)
 
     def accumulate_derivative(self, x: Any) -> None:
         """
@@ -154,6 +169,8 @@ class Scalar:
 
     @property
     def parents(self) -> Iterable[Variable]:
+        if self.history is None:
+            print(self)
         assert self.history is not None
         return self.history.inputs
 
@@ -162,15 +179,15 @@ class Scalar:
         assert h is not None
         assert h.last_fn is not None
         assert h.ctx is not None
-
-        raise NotImplementedError("Need to include this file from past assignment.")
+        local_derivatives = h.last_fn.backward(h.ctx, d_output)
+        if not isinstance(local_derivatives, tuple):
+            local_derivatives = (local_derivatives,)
+        return zip(h.inputs, local_derivatives)
 
     def backward(self, d_output: Optional[float] = None) -> None:
         """
         Calls autodiff to fill in the derivatives for the history of this object.
-
-        Args:
-            d_output (number, opt): starting derivative to backpropagate through the model
+        Args: d_output (number, opt): starting derivative to backpropagate through the model
                                    (typically left out, and assumed to be 1.0).
         """
         if d_output is None:

@@ -24,7 +24,7 @@ def add(x: float, y: float) -> float:
 
 def neg(x: float) -> float:
     "$f(x) = -x$"
-    return -x
+    return float(- 1.0 * x)
 
 
 def lt(x: float, y: float) -> float:
@@ -87,10 +87,16 @@ def exp(x: float) -> float:
     return math.exp(x)
 
 
-def log_back(x: float, d: float) -> float:
-    r"If $f = log$ (as above), compute $d \times f'(x)$"
-    return d * (1 / (x + EPS))
+# def log_back(x: float, d: float) -> float:
+#     r"If $f = log$ (as above), compute $d \times f'(x)$"
+#     return d * (1 / (x + EPS))
 
+
+
+def log_back(x: float, d: float) -> float:
+    r"If $f = log$ as above, compute $d \times f'(x)$"
+    # TODO: Implement for Task 0.1.
+    return d * inv(x)
 
 def inv(x: float) -> float:
     "$f(x) = 1/x$"
@@ -99,7 +105,8 @@ def inv(x: float) -> float:
 
 def inv_back(x: float, d: float) -> float:
     r"If $f(x) = 1/x$ compute $d \times f'(x)$"
-    return d * (1 / (x**2))
+    # return d * (1 / (x**2))
+    return float(d * (-1.0 / x ** 2.0))
 
 
 def relu_back(x: float, d: float) -> float:
@@ -178,9 +185,13 @@ def reduce(
 
 def sum(ls: Iterable[float]) -> float:
     "Sum up a list using `reduce` and `add`."
-    return reduce(add, 0)(ls)
+    # return reduce(add, 0)(ls)
+    reduce_add: Callable[[Iterable[float]], float] = reduce(add, 0.0)
+    return reduce_add(ls)
 
 
 def prod(ls: Iterable[float]) -> float:
     "Product of a list using `reduce` and `mul`."
-    return reduce(mul, 1)(ls)
+    # return reduce(mul, 1)(ls)
+    reduce_mul: Callable[[Iterable[float]], float] = reduce(mul, 1.0)
+    return reduce_mul(ls)

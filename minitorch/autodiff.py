@@ -62,19 +62,37 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    order = []
-    visited = set()
+    # TODO: Implement for Task 1.4.
+    marked : Dict[int, Variable] = dict()
 
-    def dfs(v):
-        if v.unique_id in visited:
+    def visit(variable: Variable) -> None:
+        if (variable.unique_id in marked.keys() or variable.is_constant()) :
             return
-        visited.add(v.unique_id)
-        for parent in v.parents:
-            dfs(parent)
-        order.insert(0, v)
 
-    dfs(variable)
-    return order
+        if not variable.is_leaf():
+            for parent in variable.parents:
+                visit(parent)
+
+        marked[variable.unique_id] = variable
+
+    visit(variable)
+    visited_anti_top : Any = list(marked.values())
+    visited_top : Iterable[Variable] = visited_anti_top[::-1]
+
+    return visited_top
+    # order = []
+    # visited = set()
+
+    # def dfs(v):
+    #     if v.unique_id in visited:
+    #         return
+    #     visited.add(v.unique_id)
+    #     for parent in v.parents:
+    #         dfs(parent)
+    #     order.insert(0, v)
+
+    # dfs(variable)
+    # return order
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:

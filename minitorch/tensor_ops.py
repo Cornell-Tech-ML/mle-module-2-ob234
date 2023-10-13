@@ -333,6 +333,57 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         None : Fills in `out`
     """
 
+    # def _zip(
+    #     out: Storage,
+    #     out_shape: Shape,
+    #     out_strides: Strides,
+    #     a_storage: Storage,
+    #     a_shape: Shape,
+    #     a_strides: Strides,
+    #     b_storage: Storage,
+    #     b_shape: Shape,
+    #     b_strides: Strides,
+    #     current_dim = 0, 
+    #     out_index = 0, 
+    #     a_index = 0, 
+    #     b_index = 0
+    # ) -> None:
+
+    #     if current_dim == len(out_shape):
+    #         out[out_index] = fn(a_storage[a_index], b_storage[b_index])
+    #         return
+        
+    #     for i in range(out_shape[current_dim]):
+    #         if current_dim < len(a_shape) and a_shape[current_dim] != 1:
+    #             next_a_index = a_index + i * a_strides[current_dim]
+    #         else:
+    #             next_a_index = a_index
+            
+    #         if current_dim < len(b_shape) and b_shape[current_dim] != 1:
+    #             next_b_index = b_index + i * b_strides[current_dim]
+    #         else:
+    #             next_b_index = b_index
+
+    #         next_out_index = out_index + i * out_strides[current_dim]
+    #         _zip(out, out_shape, out_strides, a_storage, a_shape, a_strides, b_storage, b_shape, b_strides, current_dim + 1, next_out_index, next_a_index, next_b_index)
+    
+    # def zip_fn(
+    #     out: Storage,
+    #     out_shape: Shape,
+    #     out_strides: Strides,
+    #     a_storage: Storage,
+    #     a_shape: Shape,
+    #     a_strides: Strides,
+    #     b_storage: Storage,
+    #     b_shape: Shape,
+    #     b_strides: Strides
+    # ) -> None:
+    #     _zip(out, out_shape, out_strides, a_storage, a_shape, a_strides, b_storage, b_shape, b_strides)
+        
+    # return zip_fn
+
+
+
     def _zip(
         out: Storage,
         out_shape: Shape,
@@ -343,45 +394,21 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         b_storage: Storage,
         b_shape: Shape,
         b_strides: Strides,
-        current_dim = 0, 
-        out_index = 0, 
-        a_index = 0, 
-        b_index = 0
     ) -> None:
+        # TODO: Implement for Task 2.3.
+        a_index = np.array(a_shape)
+        b_index = np.array(b_shape)
+        out_index = np.array(out_shape)
 
-        if current_dim == len(out_shape):
-            out[out_index] = fn(a_storage[a_index], b_storage[b_index])
-            return
-        
-        for i in range(out_shape[current_dim]):
-            if current_dim < len(a_shape) and a_shape[current_dim] != 1:
-                next_a_index = a_index + i * a_strides[current_dim]
-            else:
-                next_a_index = a_index
-            
-            if current_dim < len(b_shape) and b_shape[current_dim] != 1:
-                next_b_index = b_index + i * b_strides[current_dim]
-            else:
-                next_b_index = b_index
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            broadcast_index(out_index, out_shape, a_shape, a_index)
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+            a_data = a_storage[index_to_position(a_index, a_strides)]
+            b_data = b_storage[index_to_position(b_index, b_strides)]
+            out[index_to_position(out_index, out_strides)] = fn(a_data, b_data)
 
-            next_out_index = out_index + i * out_strides[current_dim]
-            _zip(out, out_shape, out_strides, a_storage, a_shape, a_strides, b_storage, b_shape, b_strides, current_dim + 1, next_out_index, next_a_index, next_b_index)
-    
-    def zip_fn(
-        out: Storage,
-        out_shape: Shape,
-        out_strides: Strides,
-        a_storage: Storage,
-        a_shape: Shape,
-        a_strides: Strides,
-        b_storage: Storage,
-        b_shape: Shape,
-        b_strides: Strides
-    ) -> None:
-        _zip(out, out_shape, out_strides, a_storage, a_shape, a_strides, b_storage, b_shape, b_strides)
-        
-    return zip_fn
-
+    return _zip
 
 def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
     """
@@ -434,24 +461,24 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
                 out[o_index] = fn(a_storage[pos_a], out[o_index])
                 
         # raise NotImplementedError("Need to implement for Task 2.3")
-        return _reduce
+    return _reduce
         
-        
-        '''
-        # TODO: Implement for Task 2.3.
-        out_index = np.array(out_shape)
-        a_index = out_index
-        dim = a_shape[reduce_dim]
-        for p in range(len(out)):
-            to_index(p, out_shape, out_index)
-            o = index_to_position(out_index, out_strides)
-            for s in range(dim):
-                a_index[reduce_dim] = s
-                a_data = a_storage[index_to_position(a_index, a_strides)]
-                out[o] = fn(out[o], a_data)
+    
+    '''
+    # TODO: Implement for Task 2.3.
+    out_index = np.array(out_shape)
+    a_index = out_index
+    dim = a_shape[reduce_dim]
+    for p in range(len(out)):
+        to_index(p, out_shape, out_index)
+        o = index_to_position(out_index, out_strides)
+        for s in range(dim):
+            a_index[reduce_dim] = s
+            a_data = a_storage[index_to_position(a_index, a_strides)]
+            out[o] = fn(out[o], a_data)
 
-        return _reduce
-        '''
+    return _reduce
+    '''
         
 
 SimpleBackend = TensorBackend(SimpleOps)

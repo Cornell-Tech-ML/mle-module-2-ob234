@@ -143,7 +143,7 @@ class Log(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor) -> Tensor:
         res = t1.f.log_map(t1)
-        ctx.save_for_backward(res)
+        ctx.save_for_backward(t1)
         return res 
     
     @staticmethod
@@ -151,7 +151,7 @@ class Log(Function):
         (t1, ) = ctx.saved_values
         return grad_output.f.log_back_zip(t1, grad_output)
 
-
+ 
 class Exp(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor) -> Tensor:

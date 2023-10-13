@@ -96,7 +96,8 @@ def exp(x: float) -> float:
 def log_back(x: float, d: float) -> float:
     r"If $f = log$ as above, compute $d \times f'(x)$"
     # TODO: Implement for Task 0.1.
-    return d * inv(x)
+    # return d * inv(x)
+    return d / (x + EPS)
 
 def inv(x: float) -> float:
     "$f(x) = 1/x$"
